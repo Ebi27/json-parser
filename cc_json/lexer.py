@@ -33,6 +33,7 @@ class Lexer:
     t_BLOCKEND = r'\}'
     t_COLON = r':'
     t_DOUBLE_QUOTE = r'"'
+    t_WS = r'\s+'  # Ignore white spaces
 
     # Regular expression rule for NUMBER and FLOAT
     @staticmethod
@@ -72,10 +73,7 @@ class Lexer:
         self.lexer = lex.lex(module=self, **kwargs)
 
     # Tokenize the input string
-    def get_next_token(self):
+    def getToken(self):
         self.lexer.input(self.input_string)
-        while True:
-            token = self.lexer.token()
-            if not token:
-                return None
-            return GetToken(token.type, token.value)
+        for token in self.lexer:
+            yield GetToken(token.type, token.value)
