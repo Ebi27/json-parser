@@ -22,6 +22,7 @@ class Lexer:
     def __init__(self, input_string):
         self.input_string = input_string
         self.current_index = 0
+        self.lexer = lex.lex(module=self)  # To initialize the lexer
 
     # Regular expression rules for simple tokens
     t_LPAREN = r'\('
@@ -66,11 +67,15 @@ class Lexer:
         print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
 
+    # Build the lexer
+    def build(self, **kwargs):
+        self.lexer = lex.lex(module=self, **kwargs)
+
     # Tokenize the input string
     def get_next_token(self):
-        pass
-
-
-# Build the lexer
-def build(self, **kwargs):
-    self.lexer = lex.lex(module=self, **kwargs)
+        self.lexer.input(self.input_string)
+        while True:
+            token = self.lexer.token()
+            if not token:
+                return None
+            return GetToken(token.type, token.value)
