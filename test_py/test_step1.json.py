@@ -12,6 +12,11 @@ class TestJsonParser(unittest.TestCase):
         exit_code = json_parser.parse_json_file(file_path)
         self.assertEqual(exit_code, 0, f"Expected exit code 0 for valid JSON file: {file_path}")
 
+    def test_invalid_json(self):
+        file_path = 'tests/step1/invalid.json'
+        exit_code = json_parser.parse_json_file(file_path)
+        self.assertEqual(exit_code, 1, f"Expected exit code 1 for invalid JSON file: {file_path}")
+
 
 if __name__ == '__main__':
     unittest.main()
