@@ -12,6 +12,11 @@ class SourceReader:
     def __init__(self, source_code):
         self.source_code = source_code
 
+    def read_source(self):
+        #  read the input source code from file
+        with open(self.source_code, 'r') as file:
+            return file.read()
+
 
 class Lexer:
     def __init__(self, input_string):
@@ -29,34 +34,35 @@ class Lexer:
     t_DOUBLE_QUOTE = r'"'
 
     # Regular expression rule for NUMBER and FLOAT
-    def t_NUMBER(self, t):
+    @staticmethod
+    def t_NUMBER(t):
         r'\d+'
         t.value = int(t.value)
         return t
 
     @staticmethod
-    def t_FLOAT(self, t):
+    def t_FLOAT(t):
         r'(\d*\.\d+)|(\d+\.\d*)'
         t.value = float(t.value)
         return t
 
-    @staticmethod
     # Regular expression rule for STRING
-    def t_STRING(self, t):
+    @staticmethod
+    def t_STRING(t):
         r'"([^"\\]|\\.)*"'  # Matches double-quoted strings, handling escape sequences
         t.value = t.value[1:-1]  # Remove the double quotes from the value
         return t
 
-    @staticmethod
     # Regular expression rule for BOOLEAN
-    def t_BOOLEAN(self, t):
+    @staticmethod
+    def t_BOOLEAN(t):
         r'true|false'
         t.value = (t.value == 'true')  # Convert "true" to True, "false" to False
         return t
 
     # Error handling rule
     @staticmethod
-    def t_error(self, t):
+    def t_error(t):
         print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
 
@@ -66,4 +72,5 @@ class Lexer:
 
 
 # Build the lexer
-lexer = lex.lex(module=Lexer())
+def build(self, **kwargs):
+    self.lexer = lex.lex(module=self, **kwargs)
