@@ -3,7 +3,7 @@ import sys
 
 from cc_json import json_parser
 # Add the 'json-parser' directory to the sys.path
-sys.path.append("C:/tmp/json-parser")
+sys.path.append("/")
 
 
 class TestJsonParser(unittest.TestCase):
