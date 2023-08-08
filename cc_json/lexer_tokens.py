@@ -1,6 +1,6 @@
 # This module contains the lexing rules
 
-tokens = [
+Token_Definitions = [
     # Token definition order is done in a way that the bigger entities are matched first.
     # (name, regex)
     ('QUOTED_STRING', r'(?![-0-9])".*?(?<!\\)"'),  # To  resolve lexical ambiguity
