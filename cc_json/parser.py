@@ -53,7 +53,24 @@ class JSONParser:
 
     # Implement methods for parsing object, array, string, number, boolean, and null
     def parse_object(self):
-        pass
+        if self.current_token.type == "OPEN_BRACE":
+            self.consume_token()  # Consume the opening brace '{'
+            obj = {}
+            while self.current_token and self.current_token.type != "CLOSE_BRACE":
+                key = self.parse_string()  # Parse the key (string)
+                self.expect_token("COLON")  # Expect a colon after the key
+                value = self.parse_json()  # Parse the value (any JSON type)
+
+                obj[key] = value
+                if self.current_token and self.current_token.type == "COMMA":
+                    self.consume_token()  # Consume the comma between key-value pairs
+                elif self.current_token and self.current_token.type != "CLOSE_BRACE":
+                    raise ValueError("Expected a comma or closing brace after value")
+
+            self.expect_token("CLOSE_BRACE")  # Expect a closing brace '}'
+            return obj
+        else:
+            raise ValueError("Expected an opening brace but got " + self.current_token.type)
 
     def parse_array(self):
         pass
