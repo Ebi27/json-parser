@@ -24,7 +24,7 @@ class JSONParser:
     # This method ensures that the current token matches the expected types before proceeding with parsing.
     def expect_token(self, expected_type):
         if self.curr_token and self.curr_token.type == expected_type:
-            self.expect_token(self.curr_token)
+            self.consume_token()
         else:
             raise ValueError(f"Expected token of type '{expected_type}' but got '{self.curr_token.type}'")
 
@@ -116,18 +116,26 @@ class JSONParser:
                 if self.curr_token and self.curr_token.type == "COMMA":
                     self.consume_token()
                 elif self.curr_token and self.curr_token.type != "CLOSE_BRACKET":
-                    raise ValueError("Expected a comma or closing brace after value")
-
+                    raise ValueError("Expected a comma or closing bracket after value")
             self.expect_token("CLOSE_BRACKET")
             return arr
         else:
-            raise ValueError("Expected an opening brace but got " + self.current_token.type)
+            raise ValueError("Expected an opening bracket but got " + self.curr_token.type)
 
     def parse_number(self):
-        pass
+        if self.curr_token.type == "NUMBER":
+            number = self.curr_token.value
+            self.consume_token()
+            return number
+        else:
+            raise ValueError("Expected a number but got " + self.curr_token.type)
 
     def parse_boolean(self):
-        pass
+        if self.curr_token.type == "TRUE":
+            self.consume_token()
+        elif self.curr_token.type == "FALSE":
+            self.consume_token()
 
     def parse_null(self):
-        pass
+        if self.curr_token.type == "NULL":
+            self.consume_token()
