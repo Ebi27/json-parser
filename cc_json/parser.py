@@ -104,7 +104,24 @@ class JSONParser:
         return value
 
     def parse_array(self):
-        pass
+        arr = []
+        if self.curr_token.type == "OPEN_BRACKET":
+            self.consume_token()
+
+            while self.curr_token and self.curr_token.type != "CLOSE_BRACKET":
+                value = self.parse_json()
+                self.expect_token("COMMA")
+                arr.append(value)
+
+                if self.curr_token and self.curr_token.type == "COMMA":
+                    self.consume_token()
+                elif self.curr_token and self.curr_token.type != "CLOSE_BRACKET":
+                    raise ValueError("Expected a comma or closing brace after value")
+
+            self.expect_token("CLOSE_BRACKET")
+            return arr
+        else:
+            raise ValueError("Expected an opening brace but got " + self.current_token.type)
 
     def parse_number(self):
         pass
