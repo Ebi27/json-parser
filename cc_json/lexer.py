@@ -16,7 +16,7 @@ class Lexer:
         self.tokens = []
 
     # Tokenize the input string
-    def tokenize(self):
+    def tokenize(self, input_text):
         while self.position < len(self.text):
             self.get_next_token()
 
