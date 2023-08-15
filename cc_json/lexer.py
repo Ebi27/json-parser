@@ -10,13 +10,21 @@ class GetToken:
 
 
 class Lexer:
-    def __init__(self, input_text):
+    def __init__(self, input_text=None):
         self.text = input_text
         self.position = 0
         self.tokens = []
 
     # Tokenize the input string
-    def tokenize(self, input_text):
+    def tokenize(self, file_path=None):
+        if file_path:
+            try:
+                with open(file_path, 'r') as file:
+                    self.text = file.read()
+            except FileNotFoundError:
+                print(f"Error: File not found - {file_path}")
+                return None
+
         while self.position < len(self.text):
             self.get_next_token()
 
@@ -31,4 +39,3 @@ class Lexer:
                 self.tokens.append(token)
                 return
         raise ValueError("Unrecognized token")
-
