@@ -1,5 +1,5 @@
 import argparse
-import os
+import sys
 from lexer import Lexer
 from parser import Parser
 
@@ -9,36 +9,22 @@ class JSONParser:
         self.lexer = Lexer()
         self.parser = Parser()
 
+        arg_parser = argparse.ArgumentParser(description='JSON Parser')
+        arg_parser.add_argument("file_path", help="Path to the JSON file to parse")
+        args = arg_parser.parse_args()
+        self.run_parser(args.file_path)
+
     def parse_json_file(self, file_path):
-        try:
-            with open(file_path, 'r') as file:
-                input_text = file.read()
-                tokens = self.lexer.tokenize(input_text)
-                ast = self.parser.parse(tokens)
-                return ast
-        except FileNotFoundError:
-            print(f"Error: File not found - {file_path}")
-            return None
+        tokens = self.lexer.tokenize(file_path)
+        ast = self.parser.parse(tokens)
+        if ast:
+            return sys.exit(0)
+        else:
+            return sys.exit(1)
+
+    def run_parser(self, file_path):
+        self.parse_json_file(file_path)
 
 
 if __name__ == '__main__':
-    import sys
     parser = JSONParser()
-
-    # Creating argument parser
-    arg_parser = argparse.ArgumentParser(description = 'JSON Parser')
-    arg_parser.add_argument("file_path, help = 'Path to the Json file to parse'")
-
-    # Parse command line argument
-    args = arg_parser.parse_args()
-
-    # Make an attempt to parse the specified Json file
-    ast = parser.parse_json_file(args.file_path)
-
-    # check if parsing succeeded and exit with appropriate code as specified in challenge
-    if ast:
-        sys.exit(0)  # exit with code 0 for success
-    else:
-        sys.exit(1)  # exit with code 1 for failure
-
-
