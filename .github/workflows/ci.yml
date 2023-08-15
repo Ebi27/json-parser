@@ -24,6 +24,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
-          pytest
+          pytest ./test_py/test_*.py
+
+      - name: Run json_parser.py with test JSON files
+        run: |
+          for file in tests/**/*.json; do
+            python cc_json/json_parser.py "$file"
+          done
