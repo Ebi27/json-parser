@@ -2,14 +2,17 @@
 FROM python:3.9-slim
 
 # Set the working directory inside the container
-WORKDIR /cc_json
+WORKDIR /json-parser
 
 # Copy the script from the host into the container
-COPY json_parser.py /cc_json/json_parser.py
+COPY cc_json/json_parser.py /json-parser/cc_json/json_parser.py
+COPY cc_json/lexer.py /cc_json/lexer.py
+COPY cc_json/parser.py /cc_json/parser.py
+COPY cc_json/lexer_tokens.py /cc_json/lexer_tokens.py
 
 # Copy additional files
-COPY tests /cc_json/tests
-COPY test_py /cc_json/test_py
+COPY tests /tests
+COPY test_py /test_py
 
 # Install required Python packages
 RUN pip install pytest

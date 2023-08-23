@@ -1,46 +1,57 @@
-import os
-from dotenv import load_dotenv
+import argparse
+import sys
+from cc_json.lexer import Lexer
+from cc_json import parser
 
-
-# To load environment variables from the .env file
-load_dotenv()
-python_path = os.getenv("PYTHONPATH")
-other_variable = os.getenv("OTHER_VARIABLE")
-
-# To use the variables in the script
-print(f"PYTHONPATH: {python_path}")
-print(f"OTHER_VARIABLE: {other_variable}")
+sys.path.append('/json-parser')
 
 
 class JSONParser:
+    """
+    A simple JSON parser class that uses a lexer and parser to validate JSON files.
+    """
+
     def __init__(self):
-        pass
-
-    # The tokenization of the lexer input_string will be done here.
-    def lex(self, input_string):
-        pass
-
-    # The logic that checks if a parsed token is a valid JSON object will be done here.
-    def parse(self, tokens):
-        pass
+        """
+        Initializes the JSONParser with a lexer and parser.
+        """
+        self.lexer = Lexer()
+        self.parser = parser.Parser()
 
     def parse_json_file(self, file_path):
-        with open(file_path, 'r') as file:
-            input_string = file.read()
+        """
+        Parses a JSON file using the provided file path.
 
-        tokens = self.lex(input_string)
-        exit_code = 0 if self.parse(tokens) else 1
-        return exit_code
+        Args:
+            file_path (str): The path to the JSON file to parse.
+
+        Returns:
+            None
+        """
+        tokens = self.lexer.tokenize(file_path)
+
+        if tokens is None:
+            print("Invalid")
+            print("Setting exit code to 1")
+            sys.exit(1)
+
+        if not tokens:
+            print("Invalid")
+            sys.exit(1)
+
+        ast = self.parser.parse(tokens)
+        if ast:
+            print("Valid")
+            sys.exit(0)
+        else:
+            print("Invalid")
+            sys.exit(1)
 
 
 if __name__ == '__main__':
-    import sys
+    parser = argparse.ArgumentParser(description='JSON Parser')
+    parser.add_argument("file_path", help="Path to the JSON file to parse")
+    args = parser.parse_args()
 
-    if len(sys.argv) != 2:
-        print("Usage: python json_parser.py <file_path>")
-        sys.exit(1)
-
-    file_path = sys.argv[1]
-    parser = JSONParser()
-    exit_code = parser.parse_json_file(file_path)
-    sys.exit(exit_code)
+    json_parser = JSONParser()
+    json_parser.parse_json_file(args.file_path)
