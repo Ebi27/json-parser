@@ -5,7 +5,10 @@ FROM python:3.9-slim
 WORKDIR /json-parser
 
 # Copy the script from the host into the container
-COPY cc_json/json_parser.py /cc_json/json_parser.py
+COPY cc_json/json_parser.py /json-parser/cc_json/json_parser.py
+COPY cc_json/lexer.py /cc_json/lexer.py
+COPY cc_json/parser.py /cc_json/parser.py
+COPY cc_json/lexer_tokens.py /cc_json/lexer_tokens.py
 
 # Copy additional files
 COPY tests /tests
