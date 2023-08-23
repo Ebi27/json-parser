@@ -1,30 +1,57 @@
 import argparse
 import sys
-from lexer import Lexer
-from parser import Parser
+from cc_json.lexer import Lexer
+from cc_json import parser
+
+sys.path.append('/json-parser')
 
 
 class JSONParser:
-    def __init__(self):
-        self.lexer = Lexer()
-        self.parser = Parser()
+    """
+    A simple JSON parser class that uses a lexer and parser to validate JSON files.
+    """
 
-        arg_parser = argparse.ArgumentParser(description='JSON Parser')
-        arg_parser.add_argument("file_path", help="Path to the JSON file to parse")
-        args = arg_parser.parse_args()
-        self.run_parser(args.file_path)
+    def __init__(self):
+        """
+        Initializes the JSONParser with a lexer and parser.
+        """
+        self.lexer = Lexer()
+        self.parser = parser.Parser()
 
     def parse_json_file(self, file_path):
+        """
+        Parses a JSON file using the provided file path.
+
+        Args:
+            file_path (str): The path to the JSON file to parse.
+
+        Returns:
+            None
+        """
         tokens = self.lexer.tokenize(file_path)
+
+        if tokens is None:
+            print("Invalid")
+            print("Setting exit code to 1")
+            sys.exit(1)
+
+        if not tokens:
+            print("Invalid")
+            sys.exit(1)
+
         ast = self.parser.parse(tokens)
         if ast:
-            return sys.exit(0)
+            print("Valid")
+            sys.exit(0)
         else:
-            return sys.exit(1)
-
-    def run_parser(self, file_path):
-        self.parse_json_file(file_path)
+            print("Invalid")
+            sys.exit(1)
 
 
 if __name__ == '__main__':
-    parser = JSONParser()
+    parser = argparse.ArgumentParser(description='JSON Parser')
+    parser.add_argument("file_path", help="Path to the JSON file to parse")
+    args = parser.parse_args()
+
+    json_parser = JSONParser()
+    json_parser.parse_json_file(args.file_path)
