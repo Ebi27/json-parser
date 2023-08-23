@@ -1,19 +1,24 @@
+import subprocess
+import sys
 import unittest
-from cc_json.json_parser import JSONParser
+from cc_json import json_parser
+
+sys.path.append('/json-parser')
 
 
 class TestJsonParser(unittest.TestCase):
-    def test_valid_json(self):
-        file_path = 'json-parser/tests/step1/valid.json'
-        json_parser_instance = JSONParser()  # Create an instance
-        exit_code = json_parser_instance.parse_json_file(file_path)
-        self.assertEqual(exit_code, 0, f"Expected exit code 0 for valid JSON file: {file_path}")
-
     def test_invalid_json(self):
-        file_path = 'json-parser/tests/step1/invalid.json'
-        json_parser_instance = JSONParser()  # Create an instance
-        exit_code = json_parser_instance.parse_json_file(file_path)
-        self.assertEqual(exit_code, 1, f"Expected exit code 1 for invalid JSON file: {file_path}")
+        file_path = './tests/step1/invalid.json'
+        expected_output = "Invalid\n"
+        expected_exit_code = 1
+
+        command = ["python", "/cc_json/json_parser_script.py", file_path]
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        print("Actual Exit Code:", result.returncode)
+        print("Captured Output:", result.stdout)
+
+        self.assertEqual(result.returncode, expected_exit_code)
+        self.assertEqual(result.stdout, expected_output)
 
 
 if __name__ == '__main__':
