@@ -8,6 +8,13 @@ class Parser:
         self.tokens = []
         self.stack = []
 
+    def expect_token(self, expected_type):
+        if not self.tokens:
+            raise ValueError("Expected token of type", expected_type, "but got end of input")
+        token = self.tokens[0]
+        if token.type != expected_type:
+            raise ValueError("Expected token of type", expected_type, "but got", token.type)
+
     def parse(self, tokens):
         """
         Parses a list of tokens to construct the JSON data structure.
@@ -89,17 +96,32 @@ class Parser:
             else:
                 raise ValueError("Expected an opening brace or closing brace but got " + self.tokens[0].type)
 
-
-
-
-    def handle_whitespace(self):
+    def parse_array(self):
         """
-        Parses a whitespace.
+        Parses a JSON array.
+
+        Returns:
+            list: The parsed JSON array.
         """
-        print("Getting into whitespace")
-        # Skip over whitespace tokens
-        while self.curr_token.type == "WHITESPACE":
-            self.consume_token()
+        arr = []
+        while self.tokens:
+            token = self.tokens.pop(0)
+
+            if token.type == "OPEN_BRACKET":
+                return arr
+            else:
+                value = self.parse_json()
+                arr.append(value)
+                if self.tokens[0].type == 'COMMA':
+                    self.tokens.pop(0)
+                elif token.type == "TRUE" or token.type == "FALSE":
+                    self.tokens.pop(0)
+                elif self.tokens[0].type == 'CLOSE_BRACKET':
+                    self.tokens.pop(0)
+                elif token.type == 'WHITESPACE':
+                    continue
+                else:
+                    raise ValueError("Expected an opening bracket but got " + self.tokens[0].type)
 
     def parse_string(self):
         """
@@ -108,19 +130,18 @@ class Parser:
         Returns:
             str: The parsed JSON string.
         """
-        if self.curr_token.type == "QUOTED_STRING":
-            value = self.curr_token.value[1:-1]  # Remove the surrounding quotes
-            print("This is the string value without quotes 1 : ", value)
-            # Handle escape sequences within the string
-            value = self.handle_escape_sequences(value)
-            print("This is the string value without quotes 2 : ", value)
-            self.consume_token()  # Consume the string token
-            print(f"String value after consuming: {value}")
-            if self.curr_token and self.curr_token.type == "WHITESPACE":
-                self.handle_whitespace()  # Skip over whitespace tokens
-            return value
-        else:
-            raise ValueError("Expected a quoted string but got " + self.curr_token.type)
+        # To ensure there are tokens to parse
+        if self.tokens:
+            token = self.tokens.pop(0)
+
+            if token.type == "QUOTED_STRING":
+                value = token.value[1:-1]  # Remove the surrounding quotes
+                # Handle escape sequences within the string
+                value = self.handle_escape_sequences(value)
+                return value  # Return the parsed string value
+            # If no tokens or token is not of the expected type, raise an error
+            else:
+                raise ValueError("Expected a quoted string but got " + str(token.type))
 
     @staticmethod
     def handle_escape_sequences(value):
@@ -133,7 +154,6 @@ class Parser:
         Returns:
             str: The string with escape sequences replaced by corresponding characters.
         """
-        print("Entering handle_escape_sequences")
         # Define a dictionary to map escape sequences to their respective characters
         escape_sequences = {
             r'\\"': '"',  # double quotation mark U+0022
@@ -155,33 +175,6 @@ class Parser:
 
         return value
 
-    def parse_array(self):
-        """
-        Parses a JSON array.
-
-        Returns:
-            list: The parsed JSON array.
-        """
-        print("Entering parse_array")
-
-        arr = []
-        if self.curr_token.type == "OPEN_BRACKET":
-            self.consume_token()
-
-            while self.curr_token and self.curr_token.type != "CLOSE_BRACKET":
-                value = self.parse_json()
-                self.expect_token("COMMA")
-                arr.append(value)
-
-                if self.curr_token and self.curr_token.type == "COMMA":
-                    self.consume_token()
-                elif self.curr_token and self.curr_token.type != "CLOSE_BRACKET":
-                    raise ValueError("Expected a comma or closing bracket after value")
-            self.expect_token("CLOSE_BRACKET")
-            return arr
-        else:
-            raise ValueError("Expected an opening bracket but got " + self.curr_token.type)
-
     def parse_number(self):
         """
         Parses a JSON number.
@@ -189,30 +182,28 @@ class Parser:
         Returns:
             str: The parsed JSON number.
         """
-        print("Entering parse_number")
+        if self.tokens:
+            token = self.tokens.pop(0)
 
-        if self.curr_token.type == "NUMBER":
-            number = self.curr_token.value
-            self.consume_token()
-            return number
-        else:
-            raise ValueError("Expected a number but got " + self.curr_token.type)
+            if token.type == "NUMBER":
+                return token
 
     def parse_boolean(self):
         """
         Parses a JSON boolean value.
         """
-
-        print("Entering parse_boolean")
-        if self.curr_token.type == "TRUE":
-            self.consume_token()
-        elif self.curr_token.type == "FALSE":
-            self.consume_token()
+        if self.tokens:
+            token = self.tokens.pop(0)
+            if token.type == "TRUE":
+                return token
+            elif token.type == "FALSE":
+                return token
 
     def parse_null(self):
         """
         Parses a JSON null value.
         """
-        print("Entering parse_null")
-        if self.curr_token.type == "NULL":
-            self.consume_token()
+        if self.tokens:
+            token = self.tokens.pop(0)
+            if token.type == "NULL":
+                return token
