@@ -41,9 +41,9 @@ class JSONParser:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='JSON Parser')
-    parser.add_argument("file_path", help="Path to the JSON file to parse")
-    args = parser.parse_args()
+    arg_parser = argparse.ArgumentParser(description='JSON Parser')
+    arg_parser.add_argument("file_path", help="Path to the JSON file to parse")
+    args = arg_parser.parse_args()
 
     print("File path:", args.file_path)
 
