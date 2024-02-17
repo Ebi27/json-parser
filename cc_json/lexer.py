@@ -1,4 +1,6 @@
-from cc_json import lexer_tokens
+import sys
+
+from lexer_tokens import Token_Definitions
 import re
 
 
@@ -56,8 +58,14 @@ class Lexer:
                 print(f"Error: File not found - {file_path}")
                 return None
 
+        if len(self.text) == 0:
+            print("Invalid JSON file")
+            sys.exit(1)
+
         while self.position < len(self.text):
             self.get_next_token()
+        # To handle whitespace tokens
+        self.tokens.append(GetToken("WHITESPACE", " ", self.position))
         return self.tokens
 
     def get_next_token(self):
@@ -67,7 +75,7 @@ class Lexer:
         Raises:
             ValueError: If no valid token pattern is matched.
         """
-        for token_type, rgx in lexer_tokens.Token_Definitions:
+        for token_type, rgx in Token_Definitions:
             print(f"Checking token type: {token_type}")
             pattern = re.compile(rgx)
             match = pattern.match(self.text, pos=self.position)
