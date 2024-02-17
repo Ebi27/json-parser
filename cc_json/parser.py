@@ -10,10 +10,10 @@ class Parser:
 
     def expect_token(self, expected_type):
         if not self.tokens:
-            raise ValueError("Expected token of type", expected_type, "but got end of input")
+            raise ValueError('Expected token of type', expected_type, 'but got end of input')
         token = self.tokens[0]
         if token.type != expected_type:
-            raise ValueError("Expected token of type", expected_type, "but got", token.type)
+            raise ValueError('Expected token of type', expected_type, 'but got', token.type)
 
     def parse(self, tokens):
         """
@@ -26,6 +26,7 @@ class Parser:
             dict or list: The parsed JSON data structure.
         """
         self.tokens = tokens
+        self.handle_whitespace()  # Handle leading whitespace tokens
 
         self.stack.append(('START', None))
 
@@ -47,22 +48,22 @@ class Parser:
         if self.tokens:
             token = self.tokens.pop(0)
 
-            if token.type == "OPEN_BRACE":
+            if token.type == 'OPEN_BRACE':
                 return self.parse_object()
-            elif token.type == "OPEN_BRACKET":
+            elif token.type == 'OPEN_BRACKET':
                 return self.parse_array()
-            elif token.type == "QUOTED_STRING":
+            elif token.type == 'QUOTED_STRING':
                 return self.parse_string()
-            elif token.type == "NUMBER":
+            elif token.type == 'NUMBER':
                 return self.parse_number()
-            elif token.type == "TRUE" or token.type == "FALSE":
+            elif token.type == 'TRUE' or token.type == 'FALSE':
                 return self.parse_boolean()
-            elif token.type == "NULL":
+            elif token.type == 'NULL':
                 return self.parse_null()
             else:
-                raise ValueError(f"Unexpected token type: {token.type}")
+                raise ValueError(f'Unexpected token type: {token.type}')
         else:
-            raise ValueError("Invalid: No tokens to parse")
+            raise ValueError('Invalid: No tokens to parse')
 
     # Implement methods for parsing object, array, string, number, boolean, and null
     def parse_object(self):
@@ -71,6 +72,11 @@ class Parser:
 
         Returns:
             dict: The parsed JSON object.
+
+        An object is an unordered set of name/value pairs.
+        In JSON, an object takes this form;
+         An object begins with {left brace and ends with }right brace.
+        Each name is followed by :colon and the name/value pairs are separated by ,comma.
         """
         obj = {}
 
@@ -81,20 +87,15 @@ class Parser:
             elif token.type == 'QUOTED_STRING':
                 key = self.parse_string()
                 self.expect_token('COLON')
+                # it'll throw an error if there is no colon as each name has to be followed by a colon
                 value = self.parse_json()
                 obj[key] = value
-                if self.tokens[0].type == 'COMMA':
+                if token.type[0] == 'COMMA':
                     self.tokens.pop(0)
-                elif self.tokens[0].type == 'CLOSE_BRACE':
-                    continue
-            elif token.type == 'WHITESPACE':
-                continue
-            elif token.type == 'NUMBER':
-                self.tokens.pop(0)
-            elif token.type == "TRUE" or token.type == "FALSE":
-                self.tokens.pop(0)
+                elif token.type[0] == 'CLOSE_BRACKET':
+                    self.tokens.pop(0)
             else:
-                raise ValueError("Expected an opening brace or closing brace but got " + self.tokens[0].type)
+                raise ValueError('Expected an opening brace or closing brace but got ' + self.tokens[0].type)
 
     def parse_array(self):
         """
@@ -102,26 +103,37 @@ class Parser:
 
         Returns:
             list: The parsed JSON array.
+
+
+        NOTE: An array is an ordered collection of values. An array begins with [left bracket and ends with ]right bracket.
+        Values are separated by ,comma.
+
+        A value can be a string in double quotes, or a number, or true or false or null, or an object or an array.
+        These structures can be nested.
         """
         arr = []
         while self.tokens:
             token = self.tokens.pop(0)
 
-            if token.type == "OPEN_BRACKET":
+            if token.type == 'CLOSE_BRACKET':
                 return arr
-            else:
+            elif token.type in [''
+                                'QUOTED_STRING',
+                                'NUMBER',
+                                'TRUE',
+                                'FALSE',
+                                'NULL',
+                                'OPEN_BRACE',
+                                'OPEN_BRACKET'
+                                ]:
                 value = self.parse_json()
                 arr.append(value)
-                if self.tokens[0].type == 'COMMA':
+                if token.type[0] == 'COMMA':
                     self.tokens.pop(0)
-                elif token.type == "TRUE" or token.type == "FALSE":
+                elif token.type[0] == 'CLOSE_BRACKET':
                     self.tokens.pop(0)
-                elif self.tokens[0].type == 'CLOSE_BRACKET':
-                    self.tokens.pop(0)
-                elif token.type == 'WHITESPACE':
-                    continue
-                else:
-                    raise ValueError("Expected an opening bracket but got " + self.tokens[0].type)
+            else:
+                raise ValueError('Expected an opening bracket but got ' + self.tokens[0].type)
 
     def parse_string(self):
         """
@@ -129,19 +141,22 @@ class Parser:
 
         Returns:
             str: The parsed JSON string.
+
+        A string is a sequence of zero or more Unicode characters, wrapped in double quotes, using backslash escapes.
+         A character is represented as a single character string.
         """
         # To ensure there are tokens to parse
         if self.tokens:
             token = self.tokens.pop(0)
 
-            if token.type == "QUOTED_STRING":
+            if token.type == 'QUOTED_STRING':
                 value = token.value[1:-1]  # Remove the surrounding quotes
                 # Handle escape sequences within the string
                 value = self.handle_escape_sequences(value)
                 return value  # Return the parsed string value
             # If no tokens or token is not of the expected type, raise an error
             else:
-                raise ValueError("Expected a quoted string but got " + str(token.type))
+                raise ValueError('Expected a quoted string but got ' + str(token.type))
 
     @staticmethod
     def handle_escape_sequences(value):
@@ -185,7 +200,7 @@ class Parser:
         if self.tokens:
             token = self.tokens.pop(0)
 
-            if token.type == "NUMBER":
+            if token.type == 'NUMBER':
                 return token
 
     def parse_boolean(self):
@@ -194,10 +209,21 @@ class Parser:
         """
         if self.tokens:
             token = self.tokens.pop(0)
-            if token.type == "TRUE":
+            if token.type == 'TRUE':
                 return token
-            elif token.type == "FALSE":
+            elif token.type == 'FALSE':
                 return token
+
+    def handle_whitespace(self):
+        """
+        Handles whitespace tokens in the token list.
+        """
+        while self.tokens:
+            token = self.tokens[0]
+            if token.type == 'WHITESPACE':
+                self.tokens.pop(0)  # Consume the whitespace token
+            else:
+                break
 
     def parse_null(self):
         """
@@ -205,5 +231,5 @@ class Parser:
         """
         if self.tokens:
             token = self.tokens.pop(0)
-            if token.type == "NULL":
+            if token.type == 'NULL':
                 return token
